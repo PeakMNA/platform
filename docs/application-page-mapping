@@ -1,0 +1,88 @@
+**Important Considerations:**
+
+- **App Router vs. Pages Router (Next.js):** The PRD specifies App Router, so this mapping assumes that paradigm. The App Router structures applications around components, and pages are actually components
+- **CRUD Operations:** I will include CRUD operations (Create, Read, Update, Delete) where appropriate for managing data.
+
+**I. Authentication & User Management**
+
+| Page/Component Name | Route (if applicable) | Description | Key Features | Technologies (Frontend & Backend) |
+| --- | --- | --- | --- | --- |
+| **Login** | `/login` | User login page. | Username/password, "Forgot Password," potentially MFA. | Next.js, NextAuth.js, NestJS (API), Prisma, Zod |
+| **Signup** | `/signup` | User registration/account creation page. | Email verification, password strength validation, terms & conditions. | Next.js, NextAuth.js, NestJS (API), Prisma, Zod |
+| **Forgot Password** | `/forgot-password` | Allows users to reset their passwords. | Email input, password reset instructions, token validation. | Next.js, NestAuth.js, NestJS (API), Prisma, Zod |
+| **Reset Password** | `/reset-password/[token]` | Page for entering a new password after clicking a reset link.  Token is validated. | New password input, password confirmation, token verification. | Next.js, NextAuth.js, NestJS (API), Prisma, Zod |
+| **User Profile** | `/profile` | Displays and allows users to manage their own profile information. Requires authentication. | Edit profile details (name, email, phone), change password, manage notifications, MFA settings | Next.js, NextAuth.js, NestJS (API), Prisma, TanStack Query, Zod |
+| **Admin User Management (List)** | `/admin/users` | Lists all users in the system (admin only). | Search, filter, sort user list. | Next.js, Shadcn UI, NestJS (API), Prisma, TanStack Query |
+| **Admin User Management (Detail)** | `/admin/users/[id]` | Displays details for a specific user and allows admin to edit/manage their roles and permissions (admin only). | View user details, edit roles, activate/deactivate user, impersonate user. | Next.js, Shadcn UI, NestJS (API), Prisma, TanStack Query, Zod |
+
+**II. Cluster & Business Unit Management**
+
+| Page/Component Name | Route (if applicable) | Description | Key Features | Technologies (Frontend & Backend) |
+| --- | --- | --- | --- | --- |
+| **Cluster List** | `/admin/clusters` | List of all clusters (admin only). | Create cluster, search/filter clusters. | Next.js, Shadcn UI, NestJS (API), Prisma, TanStack Query, Zod |
+| **Cluster Detail** | `/admin/clusters/[id]` | Details of a specific cluster, including business units, settings, and users (admin only). | View cluster details, manage business units, configure database, update settings, manage cluster admins. | Next.js, Shadcn UI, NestJS (API), Prisma, TanStack Query, Zod |
+| **New Cluster** | `/admin/clusters/new` | Form for creating a new cluster (admin only). | Select database allocation type, specify initial settings, create initial admin user. | Next.js, Shadcn UI, NestJS (API), Prisma, TanStack Query, Zod |
+| **Business Unit List** | `/clusters/[clusterId]/business-units` | List of business units within a specific cluster (cluster admin or higher). | Create business unit, search/filter business units. | Next.js, Shadcn UI, NestJS (API), Prisma, TanStack Query, Zod |
+| **Business Unit Detail** | `/clusters/[clusterId]/business-units/[id]` | Details of a specific business unit, including users, settings, and templates (cluster admin or higher). | View business unit details, manage users, configure settings, select/customize template. | Next.js, Shadcn UI, NestJS (API), Prisma, TanStack Query, Zod |
+| **New Business Unit** | `/clusters/[clusterId]/business-units/new` | Form for creating a new business unit (cluster admin or higher). | Select template, configure initial settings, assign initial users. | Next.js, Shadcn UI, NestJS (API), Prisma, TanStack Query, Zod |
+| **Template List** | `/admin/templates` | List of available templates (admin only). | Create/edit templates, manage template versions. | Next.js, Shadcn UI, NestJS (API), Prisma, TanStack Query, Zod |
+| **Template Detail/Editor** | `/admin/templates/[id]` | Details of a specific template, including configuration options and version history (admin only). | Edit template configuration, manage versions, view usage. | Next.js, Shadcn UI, NestJS (API), Prisma, TanStack Query, Zod |
+
+**III. Reporting & Analytics**
+
+| Page/Component Name | Route (if applicable) | Description | Key Features | Technologies (Frontend & Backend) |
+| --- | --- | --- | --- | --- |
+| **Executive Dashboard** | `/dashboard` | High-level overview of key performance indicators (KPIs) across all clusters and business units. Requires authentication. | Key metrics, charts, drill-down capabilities. | Next.js, Shadcn UI, NestJS (API), Prisma, TanStack Query, a charting library (e.g., Chart.js, Recharts), potentially integration with Snowflake |
+| **Operational Reports** | `/reports/operational` | Collection of reports focused on day-to-day operations of the supply chain. Requires authentication. | Inventory levels, order fulfillment rates, supplier performance, etc.  Download formats. | Next.js, Shadcn UI, NestJS (API), Prisma, TanStack Query, potentially integration with Snowflake |
+| **Business Intelligence Reports** | `/reports/bi` | In-depth analysis of trends, patterns, and opportunities within the supply chain. Requires authentication. | Trend analysis, forecasting, what-if scenarios. Download formats. | Next.js, Shadcn UI, NestJS (API), Prisma, TanStack Query, potentially integration with Snowflake |
+| **Compliance Reports** | `/reports/compliance` | Reports designed to demonstrate compliance with regulations and internal policies. Requires authentication. | Audit trails, access logs, security assessments. Download formats. | Next.js, Shadcn UI, NestJS (API), Prisma, TanStack Query, potentially integration with Snowflake |
+| **Custom Report Builder** | `/reports/custom` | Allows users to create their own reports by selecting data sources, metrics, and visualizations. Requires authentication. | Drag-and-drop interface, query builder, charting options, save/load custom reports. | Next.js, Shadcn UI, NestJS (API), Prisma, TanStack Query, potentially integration with Snowflake |
+
+**IV. Integrations & API Management (Admin Only)**
+
+| Page/Component Name | Route (if applicable) | Description | Key Features | Technologies (Frontend & Backend) |
+| --- | --- | --- | --- | --- |
+| **Integration List** | `/admin/integrations` | Lists configured integrations with external systems (e.g., Carmen Accounting, payment gateways). | Add/edit/delete integrations, view status, manage API keys. | Next.js, Shadcn UI, NestJS (API), Prisma, TanStack Query, Zod |
+| **Integration Detail** | `/admin/integrations/[id]` | Details of a specific integration. | View configuration, manage credentials, view logs, test connection. | Next.js, Shadcn UI, NestJS (API), Prisma, TanStack Query, Zod |
+| **API Documentation** | `/admin/api-docs` | Provides interactive API documentation (using OpenAPI/Swagger). | Explore API endpoints, test API calls. | Next.js, Swagger UI (or similar component), NestJS (serving OpenAPI spec), potentially Redoc |
+
+**V. Notifications Management (Admin Only)**
+
+| Page/Component Name | Route (if applicable) | Description | Key Features | Technologies (Frontend & Backend) |
+| --- | --- | --- | --- | --- |
+| **Notification Template List** | `/admin/notifications/templates` | List of notification templates. | Create, edit, delete templates. | Next.js, Shadcn UI, NestJS (API), Prisma, TanStack Query, Zod |
+| **Notification Template Detail** | `/admin/notifications/templates/[id]` | Detail view for a single notification template. | Edit template content, configure channels (email, SMS, etc.), preview template. | Next.js, Shadcn UI, NestJS (API), Prisma, TanStack Query, Zod |
+| **Notification Queue** | `/admin/notifications/queue` | View of the notification queue, showing pending and recently sent notifications. | Search, filter, retry failed notifications, view details. | Next.js, Shadcn UI, NestJS (API), Prisma, TanStack Query |
+
+**VI. Settings/Configuration (Admin Only)**
+
+| Page/Component Name | Route (if applicable) | Description | Key Features | Technologies (Frontend & Backend) |
+| --- | --- | --- | --- | --- |
+| **System Settings** | `/admin/settings/system` | Global system-wide settings (e.g., default timezone, currency). | Edit settings, validation, potentially version control. | Next.js, Shadcn UI, NestJS (API), Prisma, TanStack Query, Zod |
+| **Security Settings** | `/admin/settings/security` | Security-related settings (e.g., password policies, IP whitelisting). | Configure security parameters, enforce policies. | Next.js, Shadcn UI, NestJS (API), Prisma, TanStack Query, Zod |
+| **Billing Configuration** | `/admin/settings/billing` | Configuration of billing models and integration with billing systems. | Define billing plans, manage payment gateways, configure usage tracking. | Next.js, Shadcn UI, NestJS (API), Prisma, TanStack Query, Zod |
+| **Maintenance Windows** | `/admin/settings/maintenance` | Configure maintenance windows for upgrades. | Configure recurring maintenance schedule, notify users. | Next.js, Shadcn UI, NestJS (API), Prisma, TanStack Query, Zod |
+
+**VII. Error/Information Pages**
+
+| Page Name | Route (if applicable) | Description |
+| --- | --- | --- |
+| **404 Page** | `/404` | Page not found. |
+| **500 Page** | `/500` | Internal server error. |
+| **Maintenance Page** | `/maintenance` | Displayed during system maintenance. |
+| **Access Denied** | `/access-denied` | Displayed when user does not have appropriate permission. |
+
+**VIII. Potential Future Enhancements**
+
+- **Supplier Portal:** A dedicated portal for suppliers to manage their information, view orders, and submit invoices.
+- **Mobile App:** Native mobile app for iOS and Android.
+
+**Important Notes:**
+
+- **Dynamic Routes:** The `[id]` placeholders in the routes indicate dynamic routes, where the `id` parameter is used to fetch specific data.
+- **Authentication:** Almost all pages beyond login/signup will require authentication and authorization checks.
+- **Component Reusability:** Aim for component reusability across different pages. For example, a "UserCard" component could be used in both the User List and User Detail pages.
+- **State Management:** TanStack Query will be crucial for managing data fetching, caching, and updates throughout the application.
+- **Error Handling:** Implement comprehensive error handling on both the frontend and backend.
+
+This application page mapping provides a solid foundation for building the Carmen Supply Chain Platform.  Remember to adapt and refine this mapping as you progress through development and gather more detailed requirements.
