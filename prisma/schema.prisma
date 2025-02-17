@@ -1,0 +1,380 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Tenant {
+  id                 String                  @id @default(cuid())
+  name               String
+  code               String                  @unique
+  status             String                  @default("active")
+  type               String
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
+  domain             String?
+  departments        Department[]
+  items              Item[]
+  properties         Property[]
+  services           Service[]
+  stockLocations     StockLocation[]
+  templates          Template[]
+  templateCategories TemplateCategory[]
+  users              User[]
+  vendors            Vendor[]
+  vendorItems        VendorItem[]
+  configurations     TemplateConfiguration[]
+  notifications      Notification[]
+  notificationTemplates NotificationTemplate[]
+}
+
+model Property {
+  id             String          @id @default(cuid())
+  tenantId       String
+  code           String
+  name           String
+  type           String
+  status         String          @default("active")
+  timezone       String
+  address        String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  departments    Department[]
+  tenant         Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  stockLocations StockLocation[]
+  users          User[]
+
+  @@unique([tenantId, code])
+}
+
+model User {
+  id           String      @id @default(cuid())
+  email        String
+  name         String
+  password     String
+  role         String      @default("user")
+  businessUnit String?
+  avatar       String?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  lastLoginAt  DateTime?
+  departmentId String?
+  propertyId   String?
+  status       String      @default("active")
+  tenantId     String
+  sessions     Session[]
+  department   Department? @relation(fields: [departmentId], references: [id])
+  property     Property?   @relation(fields: [propertyId], references: [id])
+  tenant       Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  notificationPreferences NotificationPreference[]
+
+  @@unique([tenantId, email])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Department {
+  id             String          @id @default(cuid())
+  tenantId       String
+  propertyId     String
+  code           String
+  name           String
+  type           String
+  status         String          @default("active")
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  property       Property        @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  tenant         Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  stockLocations StockLocation[]
+  users          User[]
+
+  @@unique([tenantId, propertyId, code])
+}
+
+model StockLocation {
+  id           String      @id @default(cuid())
+  tenantId     String
+  propertyId   String
+  departmentId String
+  code         String
+  name         String
+  type         String
+  status       String      @default("active")
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  stockItems   StockItem[]
+  department   Department  @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  property     Property    @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  tenant       Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, propertyId, code])
+}
+
+model Item {
+  id           String       @id @default(cuid())
+  tenantId     String
+  code         String
+  name         String
+  description  String?
+  category     String
+  unit         String
+  minStock     Float?
+  maxStock     Float?
+  reorderPoint Float?
+  status       String       @default("active")
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  stockItems   StockItem[]
+  vendorItems  VendorItem[]
+
+  @@unique([tenantId, code])
+}
+
+model StockItem {
+  id            String        @id @default(cuid())
+  locationId    String
+  itemId        String
+  quantity      Float
+  lastCountDate DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  item          Item          @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  location      StockLocation @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  @@unique([locationId, itemId])
+}
+
+model Vendor {
+  id            String       @id @default(cuid())
+  tenantId      String
+  code          String
+  name          String
+  category      String
+  contactPerson String?
+  email         String?
+  phone         String?
+  status        String       @default("active")
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  tenant        Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  items         VendorItem[]
+
+  @@unique([tenantId, code])
+}
+
+model VendorItem {
+  id        String   @id @default(cuid())
+  vendorId  String
+  itemId    String
+  price     Float
+  currency  String
+  leadTime  Int
+  moq       Int
+  uom       String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  tenantId  String
+  item      Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  vendor    Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@unique([vendorId, itemId])
+}
+
+model Template {
+  id             String                  @id @default(cuid())
+  name           String
+  description    String?
+  categoryId     String
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+  isActive       Boolean                 @default(true)
+  businessUnit   String?
+  content        Json
+  tenantId       String
+  version        Int                     @default(1)
+  category       TemplateCategory        @relation(fields: [categoryId], references: [id])
+  tenant         Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  versions       TemplateVersion[]
+  configurations TemplateConfiguration[]
+
+  @@unique([name, categoryId])
+}
+
+model TemplateVersion {
+  id             String                  @id @default(cuid())
+  version        Int
+  templateId     String
+  content        Json
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+  isActive       Boolean                 @default(true)
+  createdBy      String
+  template       Template                @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  configurations TemplateConfiguration[]
+}
+
+model TemplateConfiguration {
+  id              String          @id @default(uuid())
+  templateId      String
+  tenantId        String
+  versionId       String
+  content         Json
+  version         Int             @default(1)
+  isActive        Boolean         @default(true)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  template        Template        @relation(fields: [templateId], references: [id])
+  tenant          Tenant          @relation(fields: [tenantId], references: [id])
+  templateVersion TemplateVersion @relation(fields: [versionId], references: [id])
+
+  @@map("template_configurations")
+}
+
+model TemplateCategory {
+  id          String     @id @default(cuid())
+  name        String
+  description String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  isActive    Boolean    @default(true)
+  tenantId    String
+  templates   Template[]
+  tenant      Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, name])
+}
+
+model SystemMetric {
+  id        String   @id @default(cuid())
+  type      String
+  value     Float
+  unit      String
+  timestamp DateTime @default(now())
+}
+
+model ServiceHealth {
+  id        String   @id @default(cuid())
+  status    String
+  latency   Int
+  createdAt DateTime @default(now())
+  message   String?
+  serviceId String
+  service   Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+}
+
+model Region {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  status    String   @default("active")
+  latency   Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  url       String
+}
+
+model Alert {
+  id          String    @id @default(cuid())
+  title       String
+  description String
+  severity    String
+  status      String    @default("active")
+  createdAt   DateTime  @default(now())
+  resolvedAt  DateTime?
+}
+
+model Service {
+  id           String          @id @default(cuid())
+  name         String
+  url          String
+  status       String          @default("active")
+  latency      Int             @default(0)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  tenantId     String
+  tenant       Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  healthChecks ServiceHealth[]
+
+  @@unique([tenantId, name])
+}
+
+model Notification {
+  id          String    @id @default(cuid())
+  tenantId    String
+  title       String
+  content     String
+  type        String    // email, sms, in_app, push, webhook, slack
+  status      String    // pending, sent, failed
+  priority    String    @default("low") // high, medium, low
+  recipient   String
+  metadata    Json?
+  createdAt   DateTime  @default(now())
+  sentAt      DateTime?
+  error       String?
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  deliveries  NotificationDelivery[]
+  template    NotificationTemplate?  @relation(fields: [templateId], references: [id])
+  templateId  String?
+
+  @@index([tenantId, status])
+  @@index([recipient, status])
+}
+
+model NotificationTemplate {
+  id          String        @id @default(cuid())
+  tenantId    String
+  name        String
+  description String?
+  type        String        // email, sms, in_app, push, webhook, slack
+  content     String
+  metadata    Json?
+  isActive    Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  tenant      Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  notifications Notification[]
+
+  @@unique([tenantId, name])
+}
+
+model NotificationDelivery {
+  id             String      @id @default(cuid())
+  notificationId String
+  channel        String      // email, sms, etc.
+  status         String      // success, failed
+  attemptCount   Int         @default(0)
+  lastAttemptAt  DateTime?
+  error          String?
+  metadata       Json?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  notification   Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+
+  @@index([notificationId, status])
+}
+
+model NotificationPreference {
+  id          String   @id @default(cuid())
+  userId      String
+  channel     String   // email, sms, in_app, push, webhook, slack
+  enabled     Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, channel])
+}
